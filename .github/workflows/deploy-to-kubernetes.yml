@@ -1,4 +1,82 @@
-name: Deploy to Kubernetes
+# name: Deploy to Kubernetes
+
+# on:
+#   push:
+#     branches:
+#       - master
+
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     # Step 1: Check out the repository
+#     - name: Checkout repository
+#       uses: actions/checkout@v3
+
+#     # Step 2: Set up JDK
+#     - name: Set up Java
+#       uses: actions/setup-java@v3
+#       with:
+#         java-version: '17'
+#         distribution: 'temurin'
+
+#       # Step 3: Build OrderService JAR
+#     - name: Build OrderService
+#       working-directory: ./OrderService
+#       run: mvn clean package -DskipTests
+
+#     # Step 4: Build UserService JAR
+#     - name: Build UserService
+#       working-directory: ./UserService
+#       run: mvn clean package -DskipTests
+
+
+#     # Step 2: Log in to Docker Hub (or another container registry)
+#     - name: Log in to Docker Hub
+#       uses: docker/login-action@v2
+#       with:
+#         username: ${{ secrets.DOCKER_USERNAME }}
+#         password: ${{ secrets.DOCKER_PASSWORD }}
+
+#     # Step 3: Build and push Docker images
+#     - name: Build and push UserService Docker image
+#       run: |
+#         docker build -t ${{ secrets.DOCKER_USERNAME }}/userservice:latest -f UserService/Dockerfile ./UserService
+#         docker push ${{ secrets.DOCKER_USERNAME }}/userservice:latest
+
+#     - name: Build and push OrderService Docker image
+#       run: |
+#         docker build -t ${{ secrets.DOCKER_USERNAME }}/orderservice:latest -f OrderService/Dockerfile ./OrderService
+#         docker push ${{ secrets.DOCKER_USERNAME }}/orderservice:latest
+
+#     # Step 4: Set up kubectl
+#     - name: Set up kubectl
+#       uses: azure/setup-kubectl@v3
+#       with:
+#         version: 'latest'
+
+#     # Step 5: Authenticate to the Kubernetes cluster
+#     - name: Authenticate with Kubernetes cluster
+#       run: |
+#         echo "${{ secrets.KUBECONFIG_CONTENT }}" > kubeconfig
+#         export KUBECONFIG=kubeconfig
+
+   
+          
+
+#     # Step 6: Deploy to Kubernetes
+#     - name: Deploy Kubernetes manifests
+#       run: |
+#         kubectl apply -f kubernetes-manifests/userservice-deployment.yaml
+#         kubectl apply -f kubernetes-manifests/orderservice-deployment.yaml
+
+
+
+
+
+
+name: Build and Deploy to Kubernetes
 
 on:
   push:
@@ -21,47 +99,45 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # Step 3: Build the JAR file
-    - name: Build with Maven
+    # Step 3: Build OrderService JAR
+    - name: Build OrderService
+      working-directory: ./OrderService
       run: mvn clean package -DskipTests
 
+    # Step 4: Build UserService JAR
+    - name: Build UserService
+      working-directory: ./UserService
+      run: mvn clean package -DskipTests
 
-    # Step 2: Log in to Docker Hub (or another container registry)
+    # Step 5: Log in to Docker Hub
     - name: Log in to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # Step 3: Build and push Docker images
-    - name: Build and push UserService Docker image
+    # Step 6: Build and push Docker images
+    - name: Build and push OrderService image
+      working-directory: ./OrderService
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/userservice:latest -f UserService/Dockerfile ./UserService
-        docker push ${{ secrets.DOCKER_USERNAME }}/userservice:latest
-
-    - name: Build and push OrderService Docker image
-      run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/orderservice:latest -f OrderService/Dockerfile ./OrderService
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/orderservice:latest .
         docker push ${{ secrets.DOCKER_USERNAME }}/orderservice:latest
 
-    # Step 4: Set up kubectl
+    - name: Build and push UserService image
+      working-directory: ./UserService
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/userservice:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/userservice:latest
+
+    # Step 7: Set up kubectl
     - name: Set up kubectl
       uses: azure/setup-kubectl@v3
       with:
         version: 'latest'
 
-    # Step 5: Authenticate to the Kubernetes cluster
-    - name: Authenticate with Kubernetes cluster
-      run: |
-        echo "${{ secrets.KUBECONFIG_CONTENT }}" > kubeconfig
-        export KUBECONFIG=kubeconfig
+    # Step 8: Deploy to Kubernetes
+    - name: Deploy OrderService
+      run: kubectl apply -f kubernetes-manifests/orderservice-deployment.yaml
 
-    - name: Test Kubernetes connection
-      run: kubectl get namespaces
-          
-
-    # Step 6: Deploy to Kubernetes
-    - name: Deploy Kubernetes manifests
-      run: |
-        kubectl apply -f kubernetes-manifests/userservice-deployment.yaml
-        kubectl apply -f kubernetes-manifests/orderservice-deployment.yaml
+    - name: Deploy UserService
+      run: kubectl apply -f kubernetes-manifests/userservice-deployment.yaml
