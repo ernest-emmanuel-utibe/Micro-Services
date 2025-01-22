@@ -17,3 +17,16 @@ spec:
         image: samuel007/userservice:latest
         ports:
         - containerPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: userservice
+spec:
+  selector:
+    app: userservice
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8081
+  type: NodePort
