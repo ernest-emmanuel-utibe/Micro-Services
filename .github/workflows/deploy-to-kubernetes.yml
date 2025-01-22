@@ -135,9 +135,17 @@ jobs:
       with:
         version: 'latest'
 
-    # Step 8: Deploy to Kubernetes
+    # Step 8: Authenticate with Kubernetes
+    - name: Authenticate with Kubernetes
+      run: |
+        echo "${{ secrets.KUBECONFIG_CONTENT }}" > kubeconfig
+        export KUBECONFIG=kubeconfig
+
+    # Step 9: Deploy to Kubernetes
     - name: Deploy OrderService
-      run: kubectl apply -f kubernetes-manifests/orderservice-deployment.yaml
+      run: |
+        kubectl apply -f kubernetes-manifests/orderservice-deployment.yaml --validate=false
 
     - name: Deploy UserService
-      run: kubectl apply -f kubernetes-manifests/userservice-deployment.yaml
+      run: |
+        kubectl apply -f kubernetes-manifests/userservice-deployment.yaml --validate=false

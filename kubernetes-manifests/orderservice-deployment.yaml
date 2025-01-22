@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: orderservice
-        image: <your-docker-image>
+        image: samuel007/orderservice
         ports:
         - containerPort: 8080
 ---
@@ -26,5 +26,5 @@ spec:
   selector:
     app: orderservice
   ports:
-    - port: 8080
-      targetPort: 8080
+  - port: 8080
+    targetPort: 8080
