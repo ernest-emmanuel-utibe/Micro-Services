@@ -53,24 +53,14 @@ jobs:
 
     # Step 7: Set up kubectl
     - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-
-    # Step 8: Authenticate with Kubernetes
-    - name: Authenticate with Kubernetes
       run: |
-        echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
+        echo "${{ secrets.KUBECONFIG_BASE64 }}" | base64 -d > kubeconfig
         export KUBECONFIG=kubeconfig
+        kubectl cluster-info
 
-    - name: Verify Kubernetes Cluster
-      run: kubectl cluster-info
-      
-    # Step 9: Deploy to Kubernetes
+    # Step 8: Deploy to Kubernetes
     - name: Deploy OrderService
-      run: |
-        kubectl apply -f kubernetes-manifests/orderservice-deployment.yaml --validate=false
+      run: kubectl apply -f kubernetes-manifests/orderservice-deployment.yaml
 
     - name: Deploy UserService
-      run: |
-        kubectl apply -f kubernetes-manifests/userservice-deployment.yaml --validate=false
+      run: kubectl apply -f kubernetes-manifests/userservice-deployment.yaml
