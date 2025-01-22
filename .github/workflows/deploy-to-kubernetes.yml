@@ -44,6 +44,10 @@ jobs:
         echo "${{ secrets.KUBECONFIG_CONTENT }}" > kubeconfig
         export KUBECONFIG=kubeconfig
 
+    - name: Test Kubernetes connection
+      run: kubectl get namespaces
+          
+
     # Step 6: Deploy to Kubernetes
     - name: Deploy Kubernetes manifests
       run: |
