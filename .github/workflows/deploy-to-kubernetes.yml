@@ -64,6 +64,13 @@ jobs:
           docker push 055665308353.dkr.ecr.$AWS_REGION.amazonaws.com/$USER_SERVICE_REPO:latest
 
 
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
+          kubectl config current-context
+          kubectl cluster-info
+
+
       - name: Verify Deployment Exists
         run: |
           if ! kubectl get deployment $DEPLOYMENT_NAME_ORDER -n my-namespace; then
