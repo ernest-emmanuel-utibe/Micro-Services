@@ -38,7 +38,18 @@ jobs:
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 055665308353.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      # 4️⃣ Build and Push Docker Images
+      # 4️⃣ Build the Java Application (IMPORTANT)
+      - name: Build OrderService JAR
+        run: |
+          cd OrderService
+          mvn clean package -DskipTests
+
+      - name: Build UserService JAR
+        run: |
+          cd UserService
+          mvn clean package -DskipTests
+
+      # 5️⃣ Build and Push Docker Images
       - name: Build and Push OrderService Image
         run: |
           cd OrderService
@@ -53,7 +64,7 @@ jobs:
           docker tag $USER_SERVICE_REPO:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$USER_SERVICE_REPO:latest
           docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$USER_SERVICE_REPO:latest
 
-      # 5️⃣ Update Kubernetes Deployments in EKS
+      # 6️⃣ Deploy to Kubernetes in EKS
       - name: Deploy OrderService to Amazon EKS
         run: |
           aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
