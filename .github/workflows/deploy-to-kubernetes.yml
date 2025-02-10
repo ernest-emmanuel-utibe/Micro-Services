@@ -80,7 +80,14 @@ jobs:
           if ! kubectl get deployment $DEPLOYMENT_NAME_ORDER -n namespace; then
             echo "Deployment not found. Creating deployment..."
             kubectl apply -f k8s/order-service-deployment.yaml
-          fi    
+          fi
+          
+      - name: Verify Deployment Exists
+        run: |
+          if ! kubectl get deployment $DEPLOYMENT_NAME_ORDER -n namespace; then
+            echo "Deployment not found. Creating deployment..."
+            kubectl apply -f k8s/user-service-deployment.yaml
+          fi       
 
       # 6️⃣ Deploy to Kubernetes in EKS
       - name: Deploy OrderService to Amazon EKS
