@@ -73,7 +73,7 @@ jobs:
 
       - name: Verify Deployment Exists
         run: |
-          if ! kubectl get deployment $DEPLOYMENT_NAME_ORDER -n my-namespace; then
+          if ! kubectl get deployment $DEPLOYMENT_NAME_ORDER -n namespace; then
             echo "Deployment not found. Creating deployment..."
             kubectl apply -f k8s/order-service-deployment.yaml
           fi    
