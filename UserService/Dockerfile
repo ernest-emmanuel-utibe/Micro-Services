@@ -1,4 +1,4 @@
 FROM openjdk:17-jdk-slim
 WORKDIR /app
-COPY target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+COPY target/*.jar Userservice/target/kubernetes-learning-0.0.1-SNAPSHOT.jar
+ENTRYPOINT ["java", "-jar", "Userservice/target/kubernetes-learning-0.0.1-SNAPSHOT.jar"]
