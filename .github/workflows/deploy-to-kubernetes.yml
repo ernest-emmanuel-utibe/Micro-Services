@@ -10,11 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_ACCOUNT_ID: 055665308353
       AWS_REGION: us-west-2
-      ECR_REPO: 055665308353.dkr.ecr.us-west-2.amazonaws.com/k8-temp
+      AWS_ACCOUNT_ID: 055665308353
+      ORDER_SERVICE_REPO: order-service
+      USER_SERVICE_REPO: user-service
       EKS_CLUSTER: fabulous-metal-seal
-      DEPLOYMENT_NAME: service
+      DEPLOYMENT_NAME_ORDER: order-service-deployment
+      DEPLOYMENT_NAME_USER: user-service-deployment
+      # ECR_REPO: 055665308353.dkr.ecr.us-west-2.amazonaws.com/k8-temp
       # SECRETS_NAME: my-app-secrets # If using Secrets Manager
 
     steps:
@@ -35,19 +38,33 @@ jobs:
         run: |
           aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 055665308353.dkr.ecr.$AWS_REGION.amazonaws.com
 
-      # 4️⃣ Build and Push Docker Image to ECR
-      - name: Build and push Docker image
+      # 4️⃣ Build and Push Docker Images
+      - name: Build and Push OrderService Image
         run: |
-          docker build -t $ECR_REPO .
-          docker tag $ECR_REPO:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
+          cd OrderService
+          docker build -t $ORDER_SERVICE_REPO .
+          docker tag $ORDER_SERVICE_REPO:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ORDER_SERVICE_REPO:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ORDER_SERVICE_REPO:latest
 
-      # 5️⃣ Update Kubernetes Deployment in EKS
-      - name: Deploy to Amazon EKS
+      - name: Build and Push UserService Image
+        run: |
+          cd UserService
+          docker build -t $USER_SERVICE_REPO .
+          docker tag $USER_SERVICE_REPO:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$USER_SERVICE_REPO:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$USER_SERVICE_REPO:latest
+
+      # 5️⃣ Update Kubernetes Deployments in EKS
+      - name: Deploy OrderService to Amazon EKS
         run: |
           aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
-          kubectl set image deployment/$DEPLOYMENT_NAME $DEPLOYMENT_NAME=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO:latest
-          kubectl rollout status deployment/$DEPLOYMENT_NAME
+          kubectl set image deployment/$DEPLOYMENT_NAME_ORDER $DEPLOYMENT_NAME_ORDER=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ORDER_SERVICE_REPO:latest
+          kubectl rollout status deployment/$DEPLOYMENT_NAME_ORDER
+
+      - name: Deploy UserService to Amazon EKS
+        run: |
+          aws eks update-kubeconfig --name $EKS_CLUSTER --region $AWS_REGION
+          kubectl set image deployment/$DEPLOYMENT_NAME_USER $DEPLOYMENT_NAME_USER=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$USER_SERVICE_REPO:latest
+          kubectl rollout status deployment/$DEPLOYMENT_NAME_USER
 
       # 6️⃣ Sync with ArgoCD (If using ArgoCD)
       # - name: Sync ArgoCD Application
