@@ -12,7 +12,7 @@ jobs:
     env:
       AWS_ACCOUNT_ID: 055665308353
       AWS_REGION: us-west-2
-      ECR_REPO: k8-temp
+      ECR_REPO: 055665308353.dkr.ecr.us-west-2.amazonaws.com/k8-temp
       EKS_CLUSTER: fabulous-metal-seal
       DEPLOYMENT_NAME: service
       # SECRETS_NAME: my-app-secrets # If using Secrets Manager
