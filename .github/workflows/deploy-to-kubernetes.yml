@@ -63,6 +63,14 @@ jobs:
           docker tag $USER_SERVICE_REPO:latest 055665308353.dkr.ecr.$AWS_REGION.amazonaws.com/$USER_SERVICE_REPO:latest
           docker push 055665308353.dkr.ecr.$AWS_REGION.amazonaws.com/$USER_SERVICE_REPO:latest
 
+
+      - name: Verify Deployment Exists
+        run: |
+          if ! kubectl get deployment $DEPLOYMENT_NAME_ORDER -n my-namespace; then
+            echo "Deployment not found. Creating deployment..."
+            kubectl apply -f k8s/order-service-deployment.yaml
+          fi    
+
       # 6️⃣ Deploy to Kubernetes in EKS
       - name: Deploy OrderService to Amazon EKS
         run: |
